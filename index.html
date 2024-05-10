@@ -1,13 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Command Prompt to Website</title>
 </head>
 <body>
     <h1>Enter a command:</h1>
-    <form action="/execute" method="post">
-        <input type="text" name="command" placeholder="Enter command here" required>
-        <button type="submit">Execute</button>
-    </form>
+    <input type="text" id="commandInput" placeholder="Enter command here" required>
+    <button onclick="executeCommand()">Execute</button>
+    <div id="result"></div>
+
+    <script src="script.js"></script>
 </body>
 </html>
+
