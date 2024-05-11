@@ -1,23 +1,32 @@
+// Function to load and instantiate the WebAssembly module
+function loadWebAssemblyModule(wasmFilePath) {
+    return fetch(wasmFilePath)
+        .then(response => response.arrayBuffer())
+        .then(bytes => WebAssembly.instantiate(bytes))
+        .then(obj => {
+            return obj.instance.exports;
+        })
+        .catch(error => {
+            console.error('Error loading WebAssembly module:', error);
+        });
+}
+
 // Function to execute a command and display the result
 function executeCommand() {
     const command = document.getElementById("commandInput").value;
 
     // Load and instantiate the WebAssembly module
-    fetch('command_exec.wasm')
-        .then(response => response.arrayBuffer())
-        .then(bytes => WebAssembly.instantiate(bytes))
-        .then(obj => {
+    loadWebAssemblyModule('command_exec.wasm')
+        .then(exports => {
             // Access the exported function '_executeCommand'
-            const executeCommand = obj.instance.exports._executeCommand;
+            const executeCommand = exports._executeCommand;
 
             // Convert JavaScript string to WebAssembly memory
-            const commandPtr = obj.instance.exports._allocate(
-                command.length + 1 // Add 1 for null terminator
-            );
+            const commandPtr = exports._allocate(command.length + 1);
             const commandBuffer = new Uint8Array(
-                obj.instance.exports.memory.buffer,
+                exports.memory.buffer,
                 commandPtr,
-                command.length + 1 // Add 1 for null terminator
+                command.length + 1
             );
             commandBuffer.set(new TextEncoder().encode(command + '\0'));
 
@@ -26,7 +35,7 @@ function executeCommand() {
 
             // Convert WebAssembly memory to JavaScript string
             const resultBuffer = new Uint8Array(
-                obj.instance.exports.memory.buffer,
+                exports.memory.buffer,
                 resultPtr
             );
             const result = new TextDecoder().decode(resultBuffer);
@@ -35,9 +44,11 @@ function executeCommand() {
             document.getElementById("result").innerText = result;
 
             // Free memory allocated by WebAssembly
-            obj.instance.exports._freeMemory(commandPtr);
-            obj.instance.exports._freeMemory(resultPtr);
-        })
+            exports._freeMemory(commandPtr);
+            exports._freeMemory(resultPtr);
+        });
+}
+
         .catch(error => {
             console.error('Error loading WebAssembly module:', error);
         });
