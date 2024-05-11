@@ -49,7 +49,4 @@ function executeCommand() {
         });
 }
 
-        .catch(error => {
-            console.error('Error loading WebAssembly module:', error);
-        });
-}
+        
